@@ -2,39 +2,39 @@
 <items version="2" >
 
     <item
-        jar="/Users/H3c/Documents/sdk/extras/android/m2repository/com/android/support/support-annotations/21.0.0/support-annotations-21.0.0.jar"
+        jar="/Users/H3c/Documents/AndroidClipSquare/app/build/intermediates/exploded-aar/AndroidClipSquare/androidClipSquareTool/unspecified/classes.jar"
         jumboMode="false"
-        revision="21.1.0"
-        sha1="1a578b9607b36266c63d43a4fa0ab5664dbe911e">
-        <dex dex="/Users/H3c/Downloads/AndroidClipSquare/app/build/intermediates/pre-dexed/debug/support-annotations-21.0.0-2b0ecbc66792750efcb87b626bdaeec6fb9b753d.jar" />
+        revision="23.0.2"
+        sha1="5555d9ef5e2279ac43c763b06305c5188201c223">
+        <dex dex="/Users/H3c/Documents/AndroidClipSquare/app/build/intermediates/pre-dexed/debug/classes-8c5ab6263655fe4981b30f07c1ed75a8380637ab.jar" />
     </item>
     <item
-        jar="/Users/H3c/Downloads/AndroidClipSquare/app/build/intermediates/exploded-aar/com.android.support/support-v4/21.0.0/classes.jar"
+        jar="/Users/H3c/Documents/AndroidClipSquare/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.1.1/classes.jar"
         jumboMode="false"
-        revision="21.1.0"
-        sha1="686344a780033e4ba22b926cd225f8d4941247e6">
-        <dex dex="/Users/H3c/Downloads/AndroidClipSquare/app/build/intermediates/pre-dexed/debug/classes-f2339f1de4bcb0d44fab9f3ad29a564e1e0f2500.jar" />
+        revision="23.0.2"
+        sha1="5c5699834e9722f1c288fea2de82725d078ba127">
+        <dex dex="/Users/H3c/Documents/AndroidClipSquare/app/build/intermediates/pre-dexed/debug/classes-e2ee3fe8980eaca87be9b20b4bbe7d87e7f89769.jar" />
     </item>
     <item
-        jar="/Users/H3c/Downloads/AndroidClipSquare/app/build/intermediates/exploded-aar/AndroidClipSquare/androidClipSquareTool/unspecified/classes.jar"
+        jar="/Users/H3c/Documents/AndroidClipSquare/app/build/intermediates/exploded-aar/com.android.support/support-v4/23.1.1/classes.jar"
         jumboMode="false"
-        revision="21.1.0"
-        sha1="b4bd35303a96d3a31904898ecdc91306f6b0155b">
-        <dex dex="/Users/H3c/Downloads/AndroidClipSquare/app/build/intermediates/pre-dexed/debug/classes-82579c8442cdf17d358d49d141acb4401090ffd3.jar" />
+        revision="23.0.2"
+        sha1="6cbc7773921fcfedbe55657578f0cbfe614778dc">
+        <dex dex="/Users/H3c/Documents/AndroidClipSquare/app/build/intermediates/pre-dexed/debug/classes-9cc0eee1e249203d6931282a62bab05af65e0ec2.jar" />
     </item>
     <item
-        jar="/Users/H3c/Downloads/AndroidClipSquare/app/build/intermediates/exploded-aar/com.android.support/support-v4/21.0.0/libs/internal_impl-21.0.0.jar"
+        jar="/Users/H3c/Documents/AndroidClipSquare/app/build/intermediates/exploded-aar/com.android.support/support-v4/23.1.1/libs/internal_impl-23.1.1.jar"
         jumboMode="false"
-        revision="21.1.0"
-        sha1="1609e6d42d0480b0f4188e2c29f75388fa12a8f0">
-        <dex dex="/Users/H3c/Downloads/AndroidClipSquare/app/build/intermediates/pre-dexed/debug/internal_impl-21.0.0-17072857b9de790260ad0d4710e5fe97998636c1.jar" />
+        revision="23.0.2"
+        sha1="a4de9c81ae239414e1ed0f86441b02abaf29bca9">
+        <dex dex="/Users/H3c/Documents/AndroidClipSquare/app/build/intermediates/pre-dexed/debug/internal_impl-23.1.1-7761138e5750d0a8ee57f45bbced6aa8da860cfd.jar" />
     </item>
     <item
-        jar="/Users/H3c/Downloads/AndroidClipSquare/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/21.0.0/classes.jar"
+        jar="/Users/H3c/Documents/sdk/extras/android/m2repository/com/android/support/support-annotations/23.1.1/support-annotations-23.1.1.jar"
         jumboMode="false"
-        revision="21.1.0"
-        sha1="95fd37732ec852e99f07eeb516a3650172f1d136">
-        <dex dex="/Users/H3c/Downloads/AndroidClipSquare/app/build/intermediates/pre-dexed/debug/classes-4391e047a786ce536810b323e7961008b5bae338.jar" />
+        revision="23.0.2"
+        sha1="8d680ba5a623724d1fb0e81c36a790f023a6cede">
+        <dex dex="/Users/H3c/Documents/AndroidClipSquare/app/build/intermediates/pre-dexed/debug/support-annotations-23.1.1-7f099731c9f24b07993775216bbbbd8eb02d1804.jar" />
     </item>
 
 </items>

@@ -4,7 +4,9 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -22,7 +24,11 @@ import android.widget.ImageView;
  * Created by H3c on 12/13/14.
  */
 public class ClipSquareImageView extends ImageView implements View.OnTouchListener, ViewTreeObserver.OnGlobalLayoutListener {
-    private static final int BORDERDISTANCE = ClipSquareView.BORDERDISTANCE;
+
+    private static final int BORDER_DISTANCE = 50;// 距离屏幕的边距
+    private static final float BORDER_LINE_WIDTH = 2f;// 框框宽度
+    private static final int BORDER_LINE_COLOR = Color.WHITE;// 边框颜色
+    private static final Paint mBorderPaint = new Paint();// 边框画笔
 
     public static final float DEFAULT_MAX_SCALE = 4.0f;
     public static final float DEFAULT_MID_SCALE = 2.0f;
@@ -90,9 +96,9 @@ public class ClipSquareImageView extends ImageView implements View.OnTouchListen
         final int drawableWidth = drawable.getIntrinsicWidth();
         final int drawableHeight = drawable.getIntrinsicHeight();
         if(viewWidth < viewHeight) {
-            borderlength = (int) (viewWidth - 2 * BORDERDISTANCE);
+            borderlength = (int) (viewWidth - 2 * BORDER_DISTANCE);
         } else {
-            borderlength = (int) (viewHeight - 2 * BORDERDISTANCE);
+            borderlength = (int) (viewHeight - 2 * BORDER_DISTANCE);
         }
 
         float screenScale = 1f;
@@ -108,7 +114,7 @@ public class ClipSquareImageView extends ImageView implements View.OnTouchListen
         if(drawableWidth <= drawableHeight) {// 竖图片
             float heightOffset = (viewHeight - drawableHeight * screenScale) / 2.0f;
             if(viewWidth <= viewHeight) {// 竖照片竖屏幕
-                defaultMatrix.postTranslate(BORDERDISTANCE, heightOffset);
+                defaultMatrix.postTranslate(BORDER_DISTANCE, heightOffset);
             } else {// 竖照片横屏幕
                 defaultMatrix.postTranslate((viewWidth - borderlength) / 2.0f, heightOffset);
             }
@@ -117,7 +123,7 @@ public class ClipSquareImageView extends ImageView implements View.OnTouchListen
             if(viewWidth <= viewHeight) {// 横照片，竖屏幕
                 defaultMatrix.postTranslate(widthOffset, (viewHeight - borderlength) / 2.0f);
             } else {// 横照片，横屏幕
-                defaultMatrix.postTranslate(widthOffset, BORDERDISTANCE);
+                defaultMatrix.postTranslate(widthOffset, BORDER_DISTANCE);
             }
         }
 
@@ -429,5 +435,50 @@ public class ClipSquareImageView extends ImageView implements View.OnTouchListen
         Canvas canvas = new Canvas(bitmap);
         draw(canvas);
         return Bitmap.createBitmap(bitmap, (getWidth() - borderlength) / 2, (getHeight() - borderlength) / 2, borderlength, borderlength);
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+
+        drawBorder(canvas);
+    }
+
+    /**
+     * 画边框
+     */
+    private void drawBorder(Canvas canvas) {
+        int width = getWidth();
+        int height = getHeight();
+
+        mBorderPaint.setColor(Color.parseColor("#76000000"));
+
+        boolean isHorizontal = false;
+        if(width > height) {
+            isHorizontal = true;
+        }
+
+        int outLeft = 0;
+        int outTop = 0;
+        int outRight = width;
+        int outBottom = height;
+        int borderlength = isHorizontal ? (height - BORDER_DISTANCE * 2) : (width - BORDER_DISTANCE * 2);
+        int inLeft = isHorizontal ? ((width - borderlength) / 2) : BORDER_DISTANCE;
+        int inTop = isHorizontal ? BORDER_DISTANCE : ((height - borderlength) / 2);
+        int inRight = isHorizontal ? (inLeft + borderlength) : borderlength + BORDER_DISTANCE;
+        int inBottom = isHorizontal ? borderlength + BORDER_DISTANCE : (inTop + borderlength);
+
+        canvas.drawRect(outLeft, outTop, outRight, inTop, mBorderPaint);
+        canvas.drawRect(outLeft, inBottom, outRight, outBottom, mBorderPaint);
+        canvas.drawRect(outLeft, inTop, inLeft, inBottom, mBorderPaint);
+        canvas.drawRect(inRight, inTop, outRight, inBottom, mBorderPaint);
+
+        mBorderPaint.setColor(BORDER_LINE_COLOR);
+        mBorderPaint.setStrokeWidth(BORDER_LINE_WIDTH);
+
+        canvas.drawLine(inLeft, inTop, inLeft, inBottom, mBorderPaint);
+        canvas.drawLine(inRight, inTop, inRight, inBottom, mBorderPaint);
+        canvas.drawLine(inLeft, inTop, inRight, inTop, mBorderPaint);
+        canvas.drawLine(inLeft, inBottom, inRight, inBottom, mBorderPaint);
     }
 }
