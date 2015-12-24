@@ -2,6 +2,7 @@ package com.h3c.androidclipsquare;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -24,10 +25,10 @@ import android.widget.ImageView;
  * Created by H3c on 12/13/14.
  */
 public class ClipSquareImageView extends ImageView implements View.OnTouchListener, ViewTreeObserver.OnGlobalLayoutListener {
-
-    private static final int BORDER_DISTANCE = 50;// 距离屏幕的边距
-    private static final float BORDER_LINE_WIDTH = 2f;// 框框宽度
-    private static final int BORDER_LINE_COLOR = Color.WHITE;// 边框颜色
+    private int BORDER_DISTANCE;// 距离屏幕的边距
+    private int OUTSIDE_COLOR;// 外部背景颜色
+    private int BORDER_LINE_COLOR;// 边框颜色
+    private float BORDER_LINE_WIDTH;// 框框宽度
     private static final Paint mBorderPaint = new Paint();// 边框画笔
 
     public static final float DEFAULT_MAX_SCALE = 4.0f;
@@ -52,9 +53,33 @@ public class ClipSquareImageView extends ImageView implements View.OnTouchListen
 
     public ClipSquareImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
+
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.ClipSquareImageView);
+        setBorderDistance((int) a.getDimension(R.styleable.ClipSquareImageView_ClipSquareIV_BorderDistance, 50));
+        setBorderWidth((int) a.getDimension(R.styleable.ClipSquareImageView_ClipSquareIV_BorderWidth, 2));
+        setBorderColor(a.getColor(R.styleable.ClipSquareImageView_ClipSquareIV_BorderColor, Color.WHITE));
+        setOutsideColor(a.getColor(R.styleable.ClipSquareImageView_ClipSquareIV_OutsideColor, Color.parseColor("#76000000")));
+        a.recycle();
+
         super.setScaleType(ScaleType.MATRIX);
         setOnTouchListener(this);
         multiGestureDetector = new MultiGestureDetector(context);
+    }
+
+    public void setBorderDistance(int distance) {
+        this.BORDER_DISTANCE = distance;
+    }
+
+    public void setBorderWidth(int width) {
+        this.BORDER_LINE_WIDTH = width;
+    }
+
+    public void setBorderColor(int color) {
+        this.BORDER_LINE_COLOR = color;
+    }
+
+    public void setOutsideColor(int color) {
+        this.OUTSIDE_COLOR = color;
     }
 
     @Override
@@ -451,7 +476,7 @@ public class ClipSquareImageView extends ImageView implements View.OnTouchListen
         int width = getWidth();
         int height = getHeight();
 
-        mBorderPaint.setColor(Color.parseColor("#76000000"));
+        mBorderPaint.setColor(OUTSIDE_COLOR);
 
         boolean isHorizontal = false;
         if(width > height) {
