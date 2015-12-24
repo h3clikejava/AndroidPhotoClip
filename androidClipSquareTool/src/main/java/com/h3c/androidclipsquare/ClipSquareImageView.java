@@ -25,11 +25,13 @@ import android.widget.ImageView;
  * Created by H3c on 12/13/14.
  */
 public class ClipSquareImageView extends ImageView implements View.OnTouchListener, ViewTreeObserver.OnGlobalLayoutListener {
+    private final Paint mBorderPaint = new Paint();// 边框画笔
     private int BORDER_DISTANCE;// 距离屏幕的边距
     private int OUTSIDE_COLOR;// 外部背景颜色
     private int BORDER_LINE_COLOR;// 边框颜色
     private float BORDER_LINE_WIDTH;// 框框宽度
-    private static final Paint mBorderPaint = new Paint();// 边框画笔
+    private int WIDTH_WEIGHT = 1;// 宽边比例
+    private int HEIGHT_WEIGHT = 1;// 高边比例
 
     public static final float DEFAULT_MAX_SCALE = 4.0f;
     public static final float DEFAULT_MID_SCALE = 2.0f;
@@ -80,6 +82,13 @@ public class ClipSquareImageView extends ImageView implements View.OnTouchListen
 
     public void setOutsideColor(int color) {
         this.OUTSIDE_COLOR = color;
+    }
+
+    public void setBorderWeight(int widthWeight, int heightWeight) {
+        this.WIDTH_WEIGHT = widthWeight;
+        this.HEIGHT_WEIGHT = heightWeight;
+
+        invalidate();
     }
 
     @Override
@@ -478,20 +487,35 @@ public class ClipSquareImageView extends ImageView implements View.OnTouchListen
 
         mBorderPaint.setColor(OUTSIDE_COLOR);
 
-        boolean isHorizontal = false;
+        // 当前View方向
+        boolean isViewHorizontal = false;
         if(width > height) {
-            isHorizontal = true;
+            isViewHorizontal = true;
+        }
+
+        // 裁剪后方向
+        boolean isCutToHorizontal = false;
+        if(WIDTH_WEIGHT >= HEIGHT_WEIGHT) {
+            if(WIDTH_WEIGHT == HEIGHT_WEIGHT && isViewHorizontal) {
+            } else {
+                isCutToHorizontal = true;
+            }
         }
 
         int outLeft = 0;
         int outTop = 0;
         int outRight = width;
         int outBottom = height;
-        int borderlength = isHorizontal ? (height - BORDER_DISTANCE * 2) : (width - BORDER_DISTANCE * 2);
-        int inLeft = isHorizontal ? ((width - borderlength) / 2) : BORDER_DISTANCE;
-        int inTop = isHorizontal ? BORDER_DISTANCE : ((height - borderlength) / 2);
-        int inRight = isHorizontal ? (inLeft + borderlength) : borderlength + BORDER_DISTANCE;
-        int inBottom = isHorizontal ? borderlength + BORDER_DISTANCE : (inTop + borderlength);
+
+        int inLeft;
+        int inTop;
+        int inRight;
+        int inBottom;
+
+        inLeft = BORDER_DISTANCE + (isCutToHorizontal ? 0 : (width - height * WIDTH_WEIGHT / HEIGHT_WEIGHT) / 2);
+        inTop = isCutToHorizontal ? (height - borderlength * HEIGHT_WEIGHT / WIDTH_WEIGHT) >> 1 : BORDER_DISTANCE;
+        inRight = width - inLeft;
+        inBottom = height - inTop;
 
         canvas.drawRect(outLeft, outTop, outRight, inTop, mBorderPaint);
         canvas.drawRect(outLeft, inBottom, outRight, outBottom, mBorderPaint);

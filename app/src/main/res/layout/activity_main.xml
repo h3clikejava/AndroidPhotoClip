@@ -46,6 +46,7 @@
         android:id="@+id/clipSquareIV"
         ClipSquareImageView:ClipSquareIV_BorderDistance="10dp"
         ClipSquareImageView:ClipSquareIV_OutsideColor="#f2ffffff"
+        ClipSquareImageView:ClipSquareIV_BorderColor="#f2ffffff"
         android:layout_weight="1"
         android:layout_width="match_parent"
         android:layout_height="0dp" />

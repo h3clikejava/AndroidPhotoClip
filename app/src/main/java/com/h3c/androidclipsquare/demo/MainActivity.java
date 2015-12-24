@@ -135,5 +135,28 @@ public class MainActivity extends Activity implements View.OnClickListener {
             v[index].setBackgroundResource(R.drawable.rect_border);
             t[index].setTextColor(Color.BLACK);
         }
+
+        int widthWeight = 1;
+        int heightWeight = 1;
+
+        switch (index) {
+            case 0:
+                widthWeight = 9;
+                heightWeight = 16;
+                break;
+            case 1:
+                widthWeight = 3;
+                heightWeight = 4;
+                break;
+            case 3:
+                widthWeight = 4;
+                heightWeight = 3;
+                break;
+            case 4:
+                widthWeight = 16;
+                heightWeight = 9;
+                break;
+        }
+        imageView.setBorderWeight(widthWeight, heightWeight);
     }
 }
