@@ -8,8 +8,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Region;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.AttributeSet;
@@ -26,7 +28,7 @@ import android.widget.ImageView;
  * Created by H3c on 12/13/14.
  */
 public class ClipSquareImageView extends ImageView implements View.OnTouchListener, ViewTreeObserver.OnGlobalLayoutListener {
-    private final Paint mBorderPaint = new Paint();// 边框画笔
+    private final Paint mBorderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);// 边框画笔
     private int BORDER_DISTANCE;// 距离屏幕的边距
     private int OUTSIDE_COLOR;// 外部背景颜色
     private int BORDER_LINE_COLOR;// 边框颜色
@@ -54,6 +56,11 @@ public class ClipSquareImageView extends ImageView implements View.OnTouchListen
     private final RectF displayRect = new RectF();// 图片的真实大小
     private final float[] matrixValues = new float[9];
 
+    private SHAPE mShape = SHAPE.REGTANGLE; // 遮罩样式
+    public enum SHAPE {
+        ROUND,
+        REGTANGLE
+    }
 
     public ClipSquareImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -115,6 +122,14 @@ public class ClipSquareImageView extends ImageView implements View.OnTouchListen
         invalidate();
     }
 
+    /**
+     * 设置是圆的还是方的
+     */
+    public void setShape(SHAPE shape) {
+        mShape = shape;
+        invalidate();
+    }
+
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
@@ -133,6 +148,13 @@ public class ClipSquareImageView extends ImageView implements View.OnTouchListen
         if(isIniting) {
             return;
         }
+        // 调整视图位置
+        initBmpPosition();
+    }
+
+    @Override
+    public void setImageBitmap(Bitmap bm) {
+        super.setImageBitmap(bm);
         // 调整视图位置
         initBmpPosition();
     }
@@ -510,17 +532,27 @@ public class ClipSquareImageView extends ImageView implements View.OnTouchListen
     private void drawBorder(Canvas canvas) {
         mBorderPaint.setColor(OUTSIDE_COLOR);
 
-        canvas.drawRect(outsideRect.left, outsideRect.top, outsideRect.right, cutRect.top, mBorderPaint);
-        canvas.drawRect(outsideRect.left, cutRect.bottom, outsideRect.right, outsideRect.bottom, mBorderPaint);
-        canvas.drawRect(outsideRect.left, cutRect.top, cutRect.left, cutRect.bottom, mBorderPaint);
-        canvas.drawRect(cutRect.right, cutRect.top, outsideRect.right, cutRect.bottom, mBorderPaint);
+        switch (mShape) {
+            case ROUND:
+                Path path = new Path();
+                path.addCircle(outsideRect.centerX(), outsideRect.centerY(), BORDER_LONG / 2, Path.Direction.CW);
+                canvas.clipPath(path, Region.Op.DIFFERENCE);
+                canvas.drawRect(outsideRect, mBorderPaint);
+                break;
+            case REGTANGLE:
+                canvas.drawRect(outsideRect.left, outsideRect.top, outsideRect.right, cutRect.top, mBorderPaint);
+                canvas.drawRect(outsideRect.left, cutRect.bottom, outsideRect.right, outsideRect.bottom, mBorderPaint);
+                canvas.drawRect(outsideRect.left, cutRect.top, cutRect.left, cutRect.bottom, mBorderPaint);
+                canvas.drawRect(cutRect.right, cutRect.top, outsideRect.right, cutRect.bottom, mBorderPaint);
 
-        // 花边框
-        mBorderPaint.setColor(BORDER_LINE_COLOR);
-        mBorderPaint.setStrokeWidth(BORDER_LINE_WIDTH);
-        canvas.drawLine(cutRect.left, cutRect.top, cutRect.left, cutRect.bottom, mBorderPaint);
-        canvas.drawLine(cutRect.right, cutRect.top, cutRect.right, cutRect.bottom, mBorderPaint);
-        canvas.drawLine(cutRect.left, cutRect.top, cutRect.right, cutRect.top, mBorderPaint);
-        canvas.drawLine(cutRect.left, cutRect.bottom, cutRect.right, cutRect.bottom, mBorderPaint);
+                // 画边框
+                mBorderPaint.setColor(BORDER_LINE_COLOR);
+                mBorderPaint.setStrokeWidth(BORDER_LINE_WIDTH);
+                canvas.drawLine(cutRect.left, cutRect.top, cutRect.left, cutRect.bottom, mBorderPaint);
+                canvas.drawLine(cutRect.right, cutRect.top, cutRect.right, cutRect.bottom, mBorderPaint);
+                canvas.drawLine(cutRect.left, cutRect.top, cutRect.right, cutRect.top, mBorderPaint);
+                canvas.drawLine(cutRect.left, cutRect.bottom, cutRect.right, cutRect.bottom, mBorderPaint);
+                break;
+        }
     }
 }
