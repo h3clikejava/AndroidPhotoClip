@@ -494,7 +494,7 @@ public class ClipSquareImageView extends ImageView implements View.OnTouchListen
         Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         draw(canvas);
-        return Bitmap.createBitmap(bitmap, (getWidth() - BORDER_LONG) / 2, (getHeight() - BORDER_LONG) / 2, BORDER_LONG, BORDER_LONG);
+        return Bitmap.createBitmap(bitmap, cutRect.left, cutRect.top, cutRect.width(), cutRect.height());
     }
 
     @Override
