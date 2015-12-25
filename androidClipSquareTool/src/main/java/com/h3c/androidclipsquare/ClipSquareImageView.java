@@ -8,6 +8,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -32,6 +33,7 @@ public class ClipSquareImageView extends ImageView implements View.OnTouchListen
     private float BORDER_LINE_WIDTH;// 框框宽度
     private int WIDTH_WEIGHT = 1;// 宽边比例
     private int HEIGHT_WEIGHT = 1;// 高边比例
+    private int BORDER_LONG;// 边长
 
     public static final float DEFAULT_MAX_SCALE = 4.0f;
     public static final float DEFAULT_MID_SCALE = 2.0f;
@@ -43,7 +45,8 @@ public class ClipSquareImageView extends ImageView implements View.OnTouchListen
 
     private MultiGestureDetector multiGestureDetector;
     private boolean isIniting;// 正在初始化
-
+    private Rect outsideRect = new Rect();// View的Rect
+    private Rect cutRect = new Rect();// 裁剪的Rect
 
     private Matrix defaultMatrix = new Matrix();// 初始化的图片矩阵，控制图片撑满屏幕及显示区域
     private Matrix dragMatrix = new Matrix();// 拖拽放大过程中动态的矩阵
@@ -51,7 +54,6 @@ public class ClipSquareImageView extends ImageView implements View.OnTouchListen
     private final RectF displayRect = new RectF();// 图片的真实大小
     private final float[] matrixValues = new float[9];
 
-    private int borderlength;
 
     public ClipSquareImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -68,26 +70,48 @@ public class ClipSquareImageView extends ImageView implements View.OnTouchListen
         multiGestureDetector = new MultiGestureDetector(context);
     }
 
+    /**
+     * 边框距离屏幕宽度
+     * @param distance
+     */
     public void setBorderDistance(int distance) {
         this.BORDER_DISTANCE = distance;
     }
 
+    /**
+     * 边框宽度
+     * @param width
+     */
     public void setBorderWidth(int width) {
         this.BORDER_LINE_WIDTH = width;
     }
 
+    /**
+     * 边框颜色
+     * @param color
+     */
     public void setBorderColor(int color) {
         this.BORDER_LINE_COLOR = color;
     }
 
+    /**
+     * 非裁剪区域颜色
+     * @param color
+     */
     public void setOutsideColor(int color) {
         this.OUTSIDE_COLOR = color;
     }
 
+    /**
+     * 设置裁剪比例
+     * @param widthWeight
+     * @param heightWeight
+     */
     public void setBorderWeight(int widthWeight, int heightWeight) {
         this.WIDTH_WEIGHT = widthWeight;
         this.HEIGHT_WEIGHT = heightWeight;
 
+        initBmpPosition();
         invalidate();
     }
 
@@ -125,41 +149,47 @@ public class ClipSquareImageView extends ImageView implements View.OnTouchListen
             return;
         }
 
-        final float viewWidth = getWidth();
-        final float viewHeight = getHeight();
-        final int drawableWidth = drawable.getIntrinsicWidth();
-        final int drawableHeight = drawable.getIntrinsicHeight();
-        if(viewWidth < viewHeight) {
-            borderlength = (int) (viewWidth - 2 * BORDER_DISTANCE);
-        } else {
-            borderlength = (int) (viewHeight - 2 * BORDER_DISTANCE);
+        outsideRect.set(0, 0, getWidth(), getHeight());
+        BORDER_LONG = Math.min(outsideRect.width(), outsideRect.height()) - 2 * BORDER_DISTANCE;
+
+        // 裁剪后方向
+        boolean isCutToHorizontal = false;
+        if(WIDTH_WEIGHT >= HEIGHT_WEIGHT) {
+            if(WIDTH_WEIGHT == HEIGHT_WEIGHT && (outsideRect.width() > outsideRect.height())) {
+            } else {
+                isCutToHorizontal = true;
+            }
         }
 
-        float screenScale = 1f;
-        // 小于屏幕的图片会被撑满屏幕
-        if(drawableWidth <= drawableHeight) {// 竖图片
-            screenScale = (float) borderlength / drawableWidth;
-        } else {// 横图片
-            screenScale = (float) borderlength / drawableHeight;
-        }
+        // 裁剪区域
+        int inLeft = BORDER_DISTANCE + (isCutToHorizontal ? 0 : (outsideRect.width() - outsideRect.height() * WIDTH_WEIGHT / HEIGHT_WEIGHT) / 2);
+        int inTop = isCutToHorizontal ? (outsideRect.height() - BORDER_LONG * HEIGHT_WEIGHT / WIDTH_WEIGHT) >> 1 : BORDER_DISTANCE;
+        int inRight = outsideRect.width() - inLeft;
+        int inBottom = outsideRect.height() - inTop;
+        cutRect.set(inLeft, inTop, inRight, inBottom);
 
+        // 获得图片高宽
+        final float drawableWidth = drawable.getIntrinsicWidth();
+        final float drawableHeight = drawable.getIntrinsicHeight();
+
+        // 按图片最小边比例缩放图片，用于撑满裁剪区
+        float screenScale;
+        float photoX = cutRect.left;
+        float photoY = cutRect.top;
+        // 先统一比例
+        float scaleWidthWeight = cutRect.width() / drawableWidth;
+        // 区域比图片宽，按照图片宽撑满
+        if(drawableHeight * scaleWidthWeight > cutRect.height()) {
+            screenScale = cutRect.width() / drawableWidth;
+            photoY = photoY - ((drawableHeight * screenScale - cutRect.height()) / 2);
+        } else {// 图片比区域宽，按照图片高度撑满
+            screenScale = cutRect.height() / drawableHeight;
+            photoX = photoX - ((drawableWidth * screenScale - cutRect.width()) / 2);
+        }
         defaultMatrix.setScale(screenScale, screenScale);
 
-        if(drawableWidth <= drawableHeight) {// 竖图片
-            float heightOffset = (viewHeight - drawableHeight * screenScale) / 2.0f;
-            if(viewWidth <= viewHeight) {// 竖照片竖屏幕
-                defaultMatrix.postTranslate(BORDER_DISTANCE, heightOffset);
-            } else {// 竖照片横屏幕
-                defaultMatrix.postTranslate((viewWidth - borderlength) / 2.0f, heightOffset);
-            }
-        } else {
-            float widthOffset = (viewWidth - drawableWidth * screenScale) / 2.0f;
-            if(viewWidth <= viewHeight) {// 横照片，竖屏幕
-                defaultMatrix.postTranslate(widthOffset, (viewHeight - borderlength) / 2.0f);
-            } else {// 横照片，横屏幕
-                defaultMatrix.postTranslate(widthOffset, BORDER_DISTANCE);
-            }
-        }
+        // 设置图片位置居中
+        defaultMatrix.postTranslate(photoX, photoY);
 
         resetMatrix();
     }
@@ -418,22 +448,18 @@ public class ClipSquareImageView extends ImageView implements View.OnTouchListen
         }
 
         float deltaX = 0, deltaY = 0;
-        final float viewWidth = getWidth();
-        final float viewHeight = getHeight();
         // 判断移动或缩放后，图片显示是否超出裁剪框边界
-        final float heightBorder = (viewHeight - borderlength) / 2;
-        final float weightBorder = (viewWidth - borderlength) / 2;
-        if(rect.top > heightBorder){
-            deltaY = heightBorder - rect.top;
+        if(rect.top > cutRect.top){
+            deltaY = cutRect.top - rect.top;
         }
-        if(rect.bottom < (viewHeight - heightBorder)){
-            deltaY = viewHeight - heightBorder - rect.bottom;
+        if(rect.bottom < cutRect.bottom){
+            deltaY = cutRect.bottom - rect.bottom;
         }
-        if(rect.left > weightBorder){
-            deltaX = weightBorder - rect.left;
+        if(rect.left > cutRect.left){
+            deltaX = cutRect.left - rect.left;
         }
-        if(rect.right < viewWidth - weightBorder){
-            deltaX = viewWidth - weightBorder - rect.right;
+        if(rect.right < cutRect.right){
+            deltaX = cutRect.right - rect.right;
         }
         // Finally actually translate the matrix
         dragMatrix.postTranslate(deltaX, deltaY);
@@ -468,7 +494,7 @@ public class ClipSquareImageView extends ImageView implements View.OnTouchListen
         Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         draw(canvas);
-        return Bitmap.createBitmap(bitmap, (getWidth() - borderlength) / 2, (getHeight() - borderlength) / 2, borderlength, borderlength);
+        return Bitmap.createBitmap(bitmap, (getWidth() - BORDER_LONG) / 2, (getHeight() - BORDER_LONG) / 2, BORDER_LONG, BORDER_LONG);
     }
 
     @Override
@@ -482,52 +508,19 @@ public class ClipSquareImageView extends ImageView implements View.OnTouchListen
      * 画边框
      */
     private void drawBorder(Canvas canvas) {
-        int width = getWidth();
-        int height = getHeight();
-
         mBorderPaint.setColor(OUTSIDE_COLOR);
 
-        // 当前View方向
-        boolean isViewHorizontal = false;
-        if(width > height) {
-            isViewHorizontal = true;
-        }
+        canvas.drawRect(outsideRect.left, outsideRect.top, outsideRect.right, cutRect.top, mBorderPaint);
+        canvas.drawRect(outsideRect.left, cutRect.bottom, outsideRect.right, outsideRect.bottom, mBorderPaint);
+        canvas.drawRect(outsideRect.left, cutRect.top, cutRect.left, cutRect.bottom, mBorderPaint);
+        canvas.drawRect(cutRect.right, cutRect.top, outsideRect.right, cutRect.bottom, mBorderPaint);
 
-        // 裁剪后方向
-        boolean isCutToHorizontal = false;
-        if(WIDTH_WEIGHT >= HEIGHT_WEIGHT) {
-            if(WIDTH_WEIGHT == HEIGHT_WEIGHT && isViewHorizontal) {
-            } else {
-                isCutToHorizontal = true;
-            }
-        }
-
-        int outLeft = 0;
-        int outTop = 0;
-        int outRight = width;
-        int outBottom = height;
-
-        int inLeft;
-        int inTop;
-        int inRight;
-        int inBottom;
-
-        inLeft = BORDER_DISTANCE + (isCutToHorizontal ? 0 : (width - height * WIDTH_WEIGHT / HEIGHT_WEIGHT) / 2);
-        inTop = isCutToHorizontal ? (height - borderlength * HEIGHT_WEIGHT / WIDTH_WEIGHT) >> 1 : BORDER_DISTANCE;
-        inRight = width - inLeft;
-        inBottom = height - inTop;
-
-        canvas.drawRect(outLeft, outTop, outRight, inTop, mBorderPaint);
-        canvas.drawRect(outLeft, inBottom, outRight, outBottom, mBorderPaint);
-        canvas.drawRect(outLeft, inTop, inLeft, inBottom, mBorderPaint);
-        canvas.drawRect(inRight, inTop, outRight, inBottom, mBorderPaint);
-
+        // 花边框
         mBorderPaint.setColor(BORDER_LINE_COLOR);
         mBorderPaint.setStrokeWidth(BORDER_LINE_WIDTH);
-
-        canvas.drawLine(inLeft, inTop, inLeft, inBottom, mBorderPaint);
-        canvas.drawLine(inRight, inTop, inRight, inBottom, mBorderPaint);
-        canvas.drawLine(inLeft, inTop, inRight, inTop, mBorderPaint);
-        canvas.drawLine(inLeft, inBottom, inRight, inBottom, mBorderPaint);
+        canvas.drawLine(cutRect.left, cutRect.top, cutRect.left, cutRect.bottom, mBorderPaint);
+        canvas.drawLine(cutRect.right, cutRect.top, cutRect.right, cutRect.bottom, mBorderPaint);
+        canvas.drawLine(cutRect.left, cutRect.top, cutRect.right, cutRect.top, mBorderPaint);
+        canvas.drawLine(cutRect.left, cutRect.bottom, cutRect.right, cutRect.bottom, mBorderPaint);
     }
 }

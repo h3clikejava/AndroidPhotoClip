@@ -134,6 +134,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         } else {
             v[index].setBackgroundResource(R.drawable.rect_border);
             t[index].setTextColor(Color.BLACK);
+            return;
         }
 
         int widthWeight = 1;
